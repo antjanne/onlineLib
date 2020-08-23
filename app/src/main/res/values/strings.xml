@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">Books</string>
+    <string name="action_settings">Settings</string>
+    <string name="title">Title</string>
+    <string name="ISBN">Write ISBN here</string>
+    <string name="search">Search</string>
+</resources>
