@@ -1,5 +1,14 @@
 package map.anton.books;
 
+
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.Point;
+import android.graphics.Rect;
+import android.media.Image;
+import android.media.ImageReader;
+import android.os.Build;
 import android.os.Bundle;
 
 import com.android.volley.Request;
@@ -10,92 +19,98 @@ import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.android.material.snackbar.Snackbar;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
+import com.google.android.gms.vision.CameraSource;
+import com.google.android.gms.vision.barcode.BarcodeDetector;
+import com.google.android.material.internal.Experimental;
 import com.google.android.material.textfield.TextInputEditText;
 
+import com.google.common.util.concurrent.ListenableFuture;
+import com.google.mlkit.vision.barcode.Barcode;
+import com.google.mlkit.vision.barcode.BarcodeScanner;
+import com.google.mlkit.vision.barcode.BarcodeScannerOptions;
+import com.google.mlkit.vision.barcode.BarcodeScanning;
+import com.google.mlkit.vision.common.InputImage;
+import com.google.mlkit.vision.common.internal.VisionImageMetadataParcel;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.camera.core.Camera;
+import androidx.camera.core.CameraSelector;
+import androidx.camera.core.ImageAnalysis;
+import androidx.camera.core.ImageCapture;
+import androidx.camera.core.ImageProxy;
+import androidx.camera.core.Preview;
+import androidx.camera.extensions.HdrImageCaptureExtender;
+import androidx.camera.lifecycle.ProcessCameraProvider;
+import androidx.camera.view.PreviewView;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import androidx.lifecycle.LifecycleOwner;
+import androidx.recyclerview.widget.DividerItemDecoration;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
+import android.provider.MediaStore;
+import android.renderscript.ScriptGroup;
 import android.util.Log;
+import android.view.SurfaceView;
 import android.view.View;
-import android.view.Menu;
-import android.view.MenuItem;
+
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
-import android.widget.EditText;
-import android.widget.TextView;
+
 import android.widget.Toast;
 
-import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 import org.w3c.dom.Text;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executors;
+
 public class MainActivity extends AppCompatActivity {
 
-    RequestQueue requestQueue;
+    private Button sButton;
+    private TextInputEditText isbnCode;
+    private String isbn;
 
-    String url = "https://openlibrary.org/api/books?bibkeys=ISBN:";
-    String lastUrl = "&jscmd=data&title&format=json";
-    TextView view;
-    Button sButton;
-    TextInputEditText isbnCode;
-    String isbn;
+    private Button scanButton;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        requestQueue = Volley.newRequestQueue(this); // Will take care of background network activities.
-        view = findViewById(R.id.ruta);
         sButton = findViewById(R.id.searchButton);
+        scanButton = findViewById(R.id.scanButton);
 
+        scanButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                previewActivity(view);
+            }
+        });
         sButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 isbnCode = findViewById(R.id.isbnCodebox);
                 isbn = isbnCode.getText().toString();
-                getBook();
             }
         });
     }
-    public void getBook()
-    {
 
-        String totalUrl = url + isbn + lastUrl;
-        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, totalUrl, null, new Response.Listener<JSONObject>() {
-            @Override
-            public void onResponse(JSONObject response) {
-                JSONObject jsonObject = response;
-                try{
-                    JSONObject book = jsonObject.getJSONObject("ISBN:"+isbn);
-                    String booktitle = book.getString("title");
-                    String pages;
-                    int pagesNumbers = 0;
-                    if(book.has("number_of_pages")){
-                        pages = book.getString("number_of_pages");
-                        pagesNumbers = Integer.valueOf(pages);
-                    }
-                    else if(book.has("pagination")){
-                        pages = book.getString("pagination");
-                        pagesNumbers = Integer.valueOf(pages);
-                    }
-                    else{
-                        pages = "Not available";
-                    }
-
-                    view.setText(booktitle + "," + pages);
-                }
-                catch (Exception w)
-                {
-                    Toast.makeText(MainActivity.this,w.getMessage(),Toast.LENGTH_LONG).show();
-                }
-            }}, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                Toast.makeText(MainActivity.this,error.getMessage() + "HATASTASDWDA",Toast.LENGTH_LONG).show();
-            }
-        });
-        requestQueue.add(jsonObjectRequest);
+    public void previewActivity(View view){
+        Intent intent = new Intent(this,PreviewActivity.class);
+        startActivity(intent);
     }
+
+
 }
+
+
 

@@ -1,7 +1,11 @@
 <resources>
     <string name="app_name">Books</string>
     <string name="action_settings">Settings</string>
-    <string name="title">Title</string>
+    <string name="yourBooks">Your Books</string>
     <string name="ISBN">Write ISBN here</string>
     <string name="search">Search</string>
+    <string name="titleText"></string>
+    <string name="nrPages"></string>
+    <string name="scan">Scan</string>
+    <string name="capture">capture</string>
 </resources>
